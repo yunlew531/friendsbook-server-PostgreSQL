@@ -22,7 +22,7 @@ class AccountApi(Resource):
     if not email: return { 'message': 'email required.', 'code': 3 }, 400
     if not password: return { 'message': 'password required.', 'code': 4 }, 400
 
-    user_query = s.query(User).filter(User.email == email).first()
+    user_query = s.query(User).filter(User.email==email).first()
     if user_query: return { 'message': 'email is exists.', 'code': 1 }, 303
     if type(password) != str: return { 'message': 'password should be string', 'code': 5 }, 400
     if not re.fullmatch(regex_email, email): return { 'message': 'email invalid', 'code': 6 }, 400
@@ -56,7 +56,7 @@ class LoginLogoutApi(Resource):
     if not password: return { 'message': 'password required.', 'code': 2 }, 400
     if len(password) < 6: return { 'message': 'password must be at least 6 characters.', 'code': 3 }, 400
     
-    user_query = s.query(User).filter(User.email == email).first()
+    user_query = s.query(User).filter(User.email==email).first()
     if not user_query: return { 'message': 'user not found.', 'code': 4 }, 404
 
     user_dict = user_query.to_dict()
@@ -64,7 +64,7 @@ class LoginLogoutApi(Resource):
     is_password_valid = bcrypt.check_password_hash(hash_password, password)
     if not is_password_valid: return { 'message': 'password is wrong.', 'code': 5}, 400
     uid = user_dict.get('uid')
-    username = user_dict.get('username')
+    name = user_dict.get('name')
     jwt_exp = datetime.now() + timedelta(days=7)
-    jwt_token = jwt.encode({'uid': uid, 'username': username, 'exp': jwt_exp}, os.getenv('JWT_KEY'), algorithm="HS256")
+    jwt_token = jwt.encode({'uid': uid, 'name': name, 'exp': jwt_exp}, os.getenv('JWT_KEY'), algorithm="HS256")
     return { 'message': 'success', 'token': jwt_token, 'uid': uid }

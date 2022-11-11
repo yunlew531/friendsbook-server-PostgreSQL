@@ -10,6 +10,10 @@ class BASE(Base):
   def to_dict(self):
     return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+  @staticmethod
+  def row_to_dict(sqlalchemy_row, select_columns_list):
+    return {select_columns_list[i]: column for i, column in enumerate(sqlalchemy_row)}
+
 engine = sqlalchemy.create_engine(os.getenv('DB_URL'))
 Session = sqlalchemy.orm.sessionmaker(bind=engine)
 s = Session()
