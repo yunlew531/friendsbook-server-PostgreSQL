@@ -13,8 +13,7 @@ def login_required(func):
       jwtDecode = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
       uid = jwtDecode.get('uid')
       name = jwtDecode.get('name')
-    except Exception as e:
-      return { 'message': e }, 403
+    except Exception as e: return { 'message': str(e) }, 403
     g.uid = uid
     g.name = name
     return func(self)

@@ -1,7 +1,7 @@
 from flask_restful import Resource, request
 from model.user import User
 from flask_bcrypt import Bcrypt
-from config.db import s
+from config.db import Session
 import re
 import jwt
 import os
@@ -22,6 +22,7 @@ class AccountApi(Resource):
     if not email: return { 'message': 'email required.', 'code': 3 }, 400
     if not password: return { 'message': 'password required.', 'code': 4 }, 400
 
+    s = Session()
     user_query = s.query(User).filter(User.email==email).first()
     if user_query: return { 'message': 'email is exists.', 'code': 1 }, 303
     if type(password) != str: return { 'message': 'password should be string', 'code': 5 }, 400
@@ -31,15 +32,15 @@ class AccountApi(Resource):
     if len(password) < 6: return { 'message': 'password too short', 'code': 9 }, 400
     hash_password = bcrypt.generate_password_hash(password=password).decode('utf-8')
 
-    user = User()
-    user.email = email
-    user.password = hash_password
-    user.name = name
+    user = User(
+      email = email,
+      password = hash_password,
+      name = name
+    )
     s.add(user)
-    try:
-      s.commit()
-    except Exception:
-      return { 'message': 'something wrong' }, 500
+    try: s.commit()
+    except Exception: return { 'message': 'something wrong' }, 500
+    finally: s.close()
 
     return { 'message': 'create success' }, 201
 
@@ -56,10 +57,12 @@ class LoginLogoutApi(Resource):
     if not password: return { 'message': 'password required.', 'code': 2 }, 400
     if len(password) < 6: return { 'message': 'password must be at least 6 characters.', 'code': 3 }, 400
     
+    s = Session()
     user_query = s.query(User).filter(User.email==email).first()
+    s.close()
     if not user_query: return { 'message': 'user not found.', 'code': 4 }, 404
 
-    user_dict = user_query.to_dict()
+    user_dict = user_query.query_to_dict()
     hash_password = user_dict.get('password')
     is_password_valid = bcrypt.check_password_hash(hash_password, password)
     if not is_password_valid: return { 'message': 'password is wrong.', 'code': 5}, 400

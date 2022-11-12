@@ -5,6 +5,7 @@ load_dotenv()
 from flask_cors import CORS
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi
+from api.article import ArticleApi
 
 app = Flask(__name__)
 api = Api(app)
@@ -17,6 +18,8 @@ api.add_resource(UserAuthApi, '/api/user', methods=['GET'], endpoint='personal_u
 api.add_resource(AccountApi, '/api/account', methods=['POST'], endpoint='account')
 api.add_resource(LoginLogoutApi, '/api/account/login', methods=['POST'], endpoint='login')
 api.add_resource(LoginLogoutApi, '/api/account/logout', methods=['GET'], endpoint='logout')
+api.add_resource(ArticleApi, '/api/article', methods=['POST'], endpoint='article')
+api.add_resource(ArticleApi, '/api/articles', methods=['GET'], endpoint='articles')
 
 if __name__ == '__main__':
   app.run()

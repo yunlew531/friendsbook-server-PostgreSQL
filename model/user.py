@@ -1,19 +1,25 @@
 from config.db import BASE
-from sqlalchemy import Column, Integer, String, TIMESTAMP
-from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float
 from uuid import uuid4
+from time import time
+from sqlalchemy.orm import relationship
+from model.article import Article
+
+def create_uuid():
+  return str(uuid4())
 
 class User(BASE):
   __tablename__ = 'users'
 
-  id = Column(Integer, primary_key=True, autoincrement=True)
-  uid = Column(String(128), unique=True, default=str(uuid4()))
+  uid = Column(String(128), primary_key=True, unique=True, default=create_uuid)
   name = Column(String(20), nullable=False)
   nickname = Column(String(20))
   email = Column(String(120))
   password = Column(String(30))
   age = Column(Integer)
-  created_at = Column(TIMESTAMP, default=datetime.now)
+  created_at = Column(Float, default=time)
+
+  articles = relationship('Article')
 
   def get_name(self):
     return self.name
