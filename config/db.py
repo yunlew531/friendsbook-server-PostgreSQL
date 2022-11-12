@@ -11,8 +11,8 @@ class BASE(Base):
     return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
   @staticmethod
-  def row_to_dict(sqlalchemy_row, select_columns_list):
-    return {select_columns_list[i]: column for i, column in enumerate(sqlalchemy_row)}
+  def rows_to_dict(sqlalchemy_rows):
+    return [r._asdict() for r in sqlalchemy_rows]
 
 # connect to database
 engine = sqlalchemy.create_engine(os.getenv('DB_URL'))

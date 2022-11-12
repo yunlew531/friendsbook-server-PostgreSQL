@@ -27,7 +27,6 @@ class UserAuthApi(Resource):
     ).filter(User.uid==g.uid).first()
     s.close()
     if not user_row: return { 'message': 'user not found' }, 404
-    select_list = ['uid', 'name', 'age', 'email', 'created_at', 'nickname']
-    user_dict = User().row_to_dict(user_row, select_list)
+    user_dict = user_row._asdict()
     
     return {'message': 'success', 'profile': user_dict }

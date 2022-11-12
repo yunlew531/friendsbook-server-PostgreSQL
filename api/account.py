@@ -6,6 +6,7 @@ import re
 import jwt
 import os
 from datetime import datetime, timedelta
+from sqlalchemy.exc import SQLAlchemyError
 
 bcrypt = Bcrypt()
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
@@ -39,7 +40,7 @@ class AccountApi(Resource):
     )
     s.add(user)
     try: s.commit()
-    except Exception: return { 'message': 'something wrong' }, 500
+    except SQLAlchemyError: return { 'message': 'something wrong' }, 500
     finally: s.close()
 
     return { 'message': 'create success' }, 201
