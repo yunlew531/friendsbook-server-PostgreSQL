@@ -1,5 +1,7 @@
 from config.db import BASE
 from sqlalchemy import Column, Integer, String, ForeignKey, Float
+from sqlalchemy.orm import relationship
+
 from time import time
 
 class Article(BASE):
@@ -7,7 +9,20 @@ class Article(BASE):
 
   id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
   content = Column(String, nullable=False)
-  published_at = Column(Float, default=time)
+  created_at = Column(Float, default=time)
 
-  # thumbs_up = EmbeddedDocumentListField(ThumbsUp, default=[])
+  # indicates who can see the article. 1 = all, 2 = friend, 3 = owner
+  access = Column(Integer, default=1)
+
+  user_uid = Column(String(128), ForeignKey('users.uid'))
+
+  comments = relationship('Comment')
+
+class Comment(BASE):
+  __tablename__ = 'comments'
+
+  id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+  content = Column(String(100), nullable=False)
+  created_at = Column(Float, default=time)
+  article_id = Column(Integer, ForeignKey('articles.id'))
   user_uid = Column(String(128), ForeignKey('users.uid'))

@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Float
 from uuid import uuid4
 from time import time
 from sqlalchemy.orm import relationship
-from model.article import Article
+from model.article import Article, Comment
 
 def create_uuid():
   return str(uuid4())
@@ -20,6 +20,7 @@ class User(BASE):
   created_at = Column(Float, default=time)
 
   articles = relationship('Article')
+  comments = relationship('Comment')
 
   def get_name(self):
     return self.name

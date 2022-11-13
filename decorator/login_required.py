@@ -4,7 +4,7 @@ import jwt
 import os
 
 def login_required(func):
-  def wrapper(self):
+  def wrapper(self, *args, **kwargs):
     authorization = request.headers.get('Authorization')
     if not authorization: return { 'message' : 'headers authorization empty' }, 401
     if not 'Bearer ' in authorization: return { 'message' : 'Authorization should be `Bearer eyJxxxxx`' }, 403
@@ -20,5 +20,5 @@ def login_required(func):
     except Exception as e: return { 'message': str(e) }, 403
     g.uid = uid
     g.name = name
-    return func(self)
+    return func(self, *args, **kwargs)
   return wrapper

@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from config.db import Session
+from model.article import Article
 from model.user import User
 from decorator.login_required import login_required
 from flask import g
