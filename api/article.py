@@ -27,15 +27,14 @@ class ArticleApi(Resource):
       ).filter(Comment.article_id==article_id)
       comments_list = []
       for comment_row in comment_rows:
-        result_group = comment_row._asdict()
-        comment_dict = result_group.get('Comment').query_to_dict()
+        comment_result_group = comment_row._asdict()
+        comment_dict = comment_result_group.get('Comment').query_to_dict()
         comments_list.append({
           **comment_dict,
           'author': {
-            'uid': result_group.get('uid'),
-            'name': result_group.get('name')
+            'uid': comment_result_group.get('uid'),
+            'name': comment_result_group.get('name')
           },
-          'created_at': 0,
         })
       articles_list.append({
         **article_dict,
@@ -96,3 +95,31 @@ class CommentApi(Resource):
     finally: s.close()
 
     return { 'message':'success' }
+
+class CommentsApi(Resource):
+  # get comments by article_id
+  @login_required
+  def get(self, article_id):
+    s = Session()
+    article = s.query(Article).filter(Article.id==article_id).first()
+    if not article: return { 'message':'article not found' }, 404
+
+    comment_rows = s.query(Comment, User.name, User.uid).join(
+      User, Comment.user_uid==User.uid
+    ).filter(Comment.article_id==article_id)
+    s.close()
+    comment_list = []
+    for comment_row in comment_rows:
+      result = comment_row._asdict()
+      comment_query = result.get('Comment')
+      print(comment_query)
+      comment_list.append({
+        **comment_query.query_to_dict(),
+        'author': {
+          'uid': result.get('uid'),
+          'name': result.get('name')
+        }
+      })
+
+    return { 'message': 'success', 'comments': comment_list }
+
