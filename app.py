@@ -6,7 +6,7 @@ from flask_cors import CORS
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi
 from api.article import ArticleApi, ArticleThumbsUpApi, CommentApi, CommentsApi ,Test
-from api.friend import RecommendFriendApi, FriendApi
+from api.friend import RecommendFriendApi, FriendApi, FriendsApi
 
 app = Flask(__name__)
 api = Api(app)
@@ -27,6 +27,7 @@ api.add_resource(CommentsApi, '/api/article/<article_id>/comments', methods=['GE
 api.add_resource(ArticleThumbsUpApi, '/api/article/<article_id>/thumbsup', methods=['GET', 'POST'], endpoint='article_thumbsup')
 api.add_resource(RecommendFriendApi, '/api/friends/recommend/<num>', methods=['GET'], endpoint='friends_recommend')
 api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELETE'], endpoint='friend')
+api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
 
 if __name__ == '__main__':
   app.run()
