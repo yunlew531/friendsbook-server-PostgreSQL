@@ -40,6 +40,7 @@ class RecommendFriendApi(Resource):
     return { 'message': 'success', 'users': user_list }
 
 class FriendApi(Resource):
+  # add friend by uid
   @login_required
   def get(self, user_uid):
     s = Session()
@@ -61,4 +62,25 @@ class FriendApi(Resource):
     finally: s.close()
 
     return { 'message':'success' }
+
+  # delete friend by uid
+  @login_required
+  def delete(self, user_uid):
+    s = Session()
+    user = s.query(User).filter(User.uid==user_uid).first()
+    if not user: return { 'message': 'user not found' }, 404
+
+    situation_one = s.query(Friend).filter(Friend.usera_uid==g.uid).filter(Friend.userb_uid==user_uid).first()
+    situation_two = s.query(Friend).filter(Friend.userb_uid==g.uid).filter(Friend.usera_uid==user_uid).first()
+    is_friend = situation_one or situation_two
+    if not is_friend: return { 'message': "you're not friends" }, 403
+
+    friend = situation_one or situation_two
+
+    s.delete(friend)
+    try: s.commit()
+    except SQLAlchemyError: return {'message':'something wrong' }, 500
+    finally: s.close()
+
+    return { 'message': 'success' }
 
