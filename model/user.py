@@ -18,6 +18,7 @@ class User(BASE):
   password = Column(String(30))
   age = Column(Integer)
   created_at = Column(Float, default=time)
+  last_seen = Column(Float)
 
   articles = relationship('Article')
   comments = relationship('Comment')

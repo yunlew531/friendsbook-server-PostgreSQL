@@ -2,6 +2,10 @@ from flask_restful import request
 from flask import g
 import jwt
 import os
+from config.db import Session
+from model.user import User
+from time import time
+from sqlalchemy.exc import SQLAlchemyError
 
 def login_required(func):
   def wrapper(self, *args, **kwargs):
@@ -20,5 +24,13 @@ def login_required(func):
     except Exception as e: return { 'message': str(e) }, 403
     g.uid = uid
     g.name = name
+    s = Session()
+    user = s.query(User).filter(User.uid==uid).first()
+    print(1, user)
+    if user:
+      print(2)
+      user.last_seen = time()
+      s.commit()
+    s.close()
     return func(self, *args, **kwargs)
   return wrapper
