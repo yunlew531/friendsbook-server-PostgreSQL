@@ -5,10 +5,10 @@ import os
 from config.db import Session
 from model.user import User
 from time import time
-from sqlalchemy.exc import SQLAlchemyError
 
 def login_required(func):
   def wrapper(self, *args, **kwargs):
+    # check jwt token
     authorization = request.headers.get('Authorization')
     if not authorization: return { 'message' : 'headers authorization empty' }, 401
     if not 'Bearer ' in authorization: return { 'message' : 'Authorization should be `Bearer eyJxxxxx`' }, 403
@@ -24,13 +24,14 @@ def login_required(func):
     except Exception as e: return { 'message': str(e) }, 403
     g.uid = uid
     g.name = name
+
+    # update user last_seen
     s = Session()
     user = s.query(User).filter(User.uid==uid).first()
-    print(1, user)
     if user:
-      print(2)
       user.last_seen = time()
       s.commit()
     s.close()
+
     return func(self, *args, **kwargs)
   return wrapper
