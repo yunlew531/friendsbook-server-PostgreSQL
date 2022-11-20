@@ -6,6 +6,7 @@ from uuid import uuid4
 from sqlalchemy.exc import SQLAlchemyError
 from decorator.login_required import login_required
 from model.image import Image
+from model.user import User
 
 class ImageApi(Resource):
   # upload image
@@ -37,3 +38,17 @@ class ImageApi(Resource):
     finally: s.close()
 
     return { 'message': 'success', 'url': url }
+
+class ImagesApi(Resource):
+  def get(self, user_uid):
+    s = Session()
+    user = s.query(User).filter(User.uid==user_uid).first()
+    if not user: return { 'message': 'user not found' }, 404
+
+    image_query = s.query(Image).filter(Image.user_uid==user_uid)
+    s.close()
+    images = []
+    for image in image_query:
+      images.append(image.query_to_dict())
+
+    return { 'message': 'success', 'images': images }

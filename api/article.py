@@ -7,7 +7,8 @@ from model.article import Article, Comment, ArticleThumbsUp
 from model.user import User
 
 class ArticleApi(Resource):
-  # get personal page article
+  # get personal page articles by token
+  # include fan article, club article
   @login_required
   def get(self):
     s = Session()
@@ -85,14 +86,6 @@ class ArticleApi(Resource):
     finally: s.close()
 
     return { 'message': 'success' }
-
-class Test(Resource):
-  @login_required
-  def get(self):
-    s = Session()
-    ars = s.query(Article.content, User.name).join(User, Article.user_uid==User.uid)
-    s.close()
-    return {'message': Article().rows_to_dict(ars) }
 
 class CommentApi(Resource):
   # post comment in article
