@@ -187,3 +187,67 @@ class ArticleThumbsUpApi(Resource):
     finally: s.close()
 
     return { 'message': 'success' }, 200
+
+class ArticlesByUid(Resource):
+  def get(self, user_uid):
+    s = Session()
+    user = s.query(User).filter(User.uid==user_uid).first()
+    if not user: return { 'message': 'user not found' }, 404
+    
+    # article join author
+    articles_rows = s.query(Article, User.name).join(
+      User, Article.user_uid==User.uid
+    ).filter(Article.user_uid==user_uid)
+
+    articles_list = []
+    for article_row in articles_rows:
+      result_group = article_row._asdict()
+      article_dict = result_group.get('Article').query_to_dict()
+      article_id = article_dict.get('id')
+
+      # article join thumbs_up
+      thumbs_up_rows = s.query(ArticleThumbsUp, User.name, User.uid).join(
+        User, ArticleThumbsUp.user_uid==User.uid
+      ).filter(ArticleThumbsUp.article_id==article_id)
+
+      thumbs_up_list = []
+      for thumbs_up_row in thumbs_up_rows:
+        thumbs_up_result = thumbs_up_row._asdict()
+        thumbs_up_dict = thumbs_up_result.get('ArticleThumbsUp').query_to_dict()
+        thumbs_up_list.append({
+          **thumbs_up_dict,
+          'author': {
+            'uid': thumbs_up_result.get('uid'),
+            'name': thumbs_up_result.get('name')
+          }
+        })
+
+      # article join comments
+      comment_rows = s.query(Comment, User.name, User.uid).join(
+        User, Comment.user_uid==User.uid
+      ).filter(Comment.article_id==article_id)
+
+      comments_list = []
+      for comment_row in comment_rows:
+        comment_result_group = comment_row._asdict()
+        comment_dict = comment_result_group.get('Comment').query_to_dict()
+        comments_list.append({
+          **comment_dict,
+          'author': {
+            'uid': comment_result_group.get('uid'),
+            'name': comment_result_group.get('name')
+          },
+        })
+
+      articles_list.append({
+        **article_dict,
+        'author': {
+          'name': result_group.get('name'),
+          'uid': user_uid
+        },
+        'comments': comments_list,
+        'thumbs_up': thumbs_up_list
+      })
+    s.close()
+
+    return { 'message': 'success', 'articles': articles_list }

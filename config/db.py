@@ -15,6 +15,6 @@ class BASE(Base):
     return [r._asdict() for r in sqlalchemy_rows]
 
 # connect to database
-engine = sqlalchemy.create_engine(os.getenv('DB_URL'))
+engine = sqlalchemy.create_engine(os.getenv('DB_URL'), pool_size=100)
 Session = sqlalchemy.orm.sessionmaker(bind=engine)
 BASE.metadata.create_all(engine)
