@@ -10,7 +10,7 @@ def create_uuid():
 class User(BASE):
   __tablename__ = 'users'
 
-  uid = Column(String(128), primary_key=True, unique=True, default=create_uuid)
+  uid = Column(String(36), primary_key=True, unique=True, default=create_uuid)
   name = Column(String(20), nullable=False)
   nickname = Column(String(20))
   email = Column(String(120))
@@ -22,6 +22,7 @@ class User(BASE):
   articles = relationship('Article')
   comments = relationship('Comment')
   thumbs_up = relationship('ArticleThumbsUp')
+  images = relationship('Image')
 
   def get_name(self):
     return self.name

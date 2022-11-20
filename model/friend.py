@@ -8,8 +8,8 @@ class Friend(BASE):
   __tablename__ = 'friends'
 
   id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-  usera_uid = Column(String(128), ForeignKey('users.uid'))
-  userb_uid = Column(String(128), ForeignKey('users.uid'))
+  usera_uid = Column(String(36), ForeignKey('users.uid'))
+  userb_uid = Column(String(36), ForeignKey('users.uid'))
   became_friend_time = Column(Float, default=time)
 
   usera = relationship(User, foreign_keys=usera_uid)

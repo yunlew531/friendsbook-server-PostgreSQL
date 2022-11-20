@@ -3,6 +3,7 @@ from flask_restful import Api
 from dotenv import load_dotenv
 load_dotenv()
 from flask_cors import CORS
+from api.image import ImageApi
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi
 from api.article import ArticleApi, ArticleThumbsUpApi, CommentApi, CommentsApi ,Test
@@ -28,6 +29,7 @@ api.add_resource(ArticleThumbsUpApi, '/api/article/<article_id>/thumbsup', metho
 api.add_resource(RecommendFriendApi, '/api/friends/recommend/<num>', methods=['GET'], endpoint='friends_recommend')
 api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELETE'], endpoint='friend')
 api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
+api.add_resource(ImageApi, '/api/image', methods=['POST'], endpoint='image')
 
 if __name__ == '__main__':
   app.run()

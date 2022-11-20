@@ -35,7 +35,7 @@ class RecommendFriendApi(Resource):
     user_model_list = users_query.all()
 
     if pick_num > count: pick_num = count
-    if pick_num > count - len(friend_list): pick_num = count - len(friend_list) - 1
+    if pick_num >= count - len(friend_list): pick_num = count - len(friend_list) - 1
 
     # random user list
     user_list = []
