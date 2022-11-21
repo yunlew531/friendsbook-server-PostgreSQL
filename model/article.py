@@ -24,6 +24,7 @@ class Comment(BASE):
   id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
   content = Column(String(300), nullable=False)
   created_at = Column(Float, default=time)
+  type = Column(Integer)
   article_id = Column(Integer, ForeignKey('articles.id'))
   user_uid = Column(String(36), ForeignKey('users.uid'))
 

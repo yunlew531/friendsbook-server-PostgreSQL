@@ -86,6 +86,33 @@ class ArticleApi(Resource):
     finally: s.close()
 
     return { 'message': 'success' }
+  
+  # delete article
+  @login_required
+  def delete(self, article_id):
+    s = Session()
+    article = s.query(Article).filter(Article.id==article_id).first()
+    if not article: return { 'message': 'article not found' }, 404
+    if article.user_uid != g.uid: return { 'message': 'permission denied' }, 403
+
+    comments = s.query(Comment).filter(Comment.article_id==article_id)
+    for comment in comments:
+      s.delete(comment)
+
+    thumbs_up = s.query(ArticleThumbsUp).filter(ArticleThumbsUp.article_id==article_id)
+    for thumb in thumbs_up:
+      s.delete(thumb)
+
+    s.delete(article)
+
+    try: s.commit()
+    except SQLAlchemyError as e : 
+      print(e) 
+      return { 'message': 'something wrong' }, 500
+      
+    finally: s.close()
+
+    return { 'message': 'success' }
 
 class CommentApi(Resource):
   # post comment in article
