@@ -165,14 +165,13 @@ class ArticleThumbsUpApi(Resource):
 
     return { 'message': 'success', 'thumbs_up': thumbs_up_list }
 
-
   # thumbs up article
   @login_required
   def post(self, article_id):
     s = Session()
     article = s.query(Article).filter(Article.id==article_id).first()
     if not article: return { 'message': 'article not found' }, 404
-    thumbs_up_exist = s.query(ArticleThumbsUp).filter(ArticleThumbsUp.article_id==article_id and ArticleThumbsUp.user_uid==g.uid).first()
+    thumbs_up_exist = s.query(ArticleThumbsUp).filter(ArticleThumbsUp.article_id==article_id).filter(ArticleThumbsUp.user_uid==g.uid).first()
     
     if thumbs_up_exist: 
       s.delete(thumbs_up_exist)
