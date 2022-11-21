@@ -106,10 +106,7 @@ class ArticleApi(Resource):
     s.delete(article)
 
     try: s.commit()
-    except SQLAlchemyError as e : 
-      print(e) 
-      return { 'message': 'something wrong' }, 500
-      
+    except SQLAlchemyError: return { 'message': 'something wrong' }, 500
     finally: s.close()
 
     return { 'message': 'success' }
