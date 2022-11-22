@@ -78,11 +78,48 @@ class BannerImgApi(Resource):
     )
     s.add(image)
 
-    # set banner_img to user profile
+    # set banner_url to user profile
     user = s.query(User).filter(User.uid==g.uid).first()
     if not user: return {'message': 'user not found' }, 404
 
-    user.banner_img = url
+    user.banner_url = url
+
+    try: s.commit()
+    except SQLAlchemyError: return { 'message': 'something wrong' }, 500
+    finally: s.close()
+
+    return { 'message': 'success', 'url': url }
+
+class AvatarImgApi(Resource):
+  # upload avatar image by jwt token uid
+  @login_required
+  def post(self):
+    file = request.files.get('image-file')
+    if not file.filename.endswith('.jpeg') and not file.filename.endswith('.jpg'):
+      return { 'message': 'jpg or jpeg only', 'code': 1 }, 400
+    uid = g.uid
+    id = str(uuid4())
+
+    # storage image to firebase storage
+    ref = storage.child('{0}/{1}'.format(uid, id))
+    ref.put(file)
+    url = storage.child('{0}/{1}'.format(uid, id)).get_url(None)
+
+    s = Session()
+
+    # storage image information to PostgreSQL
+    image = Image(
+      id=id,
+      url=url,
+      user_uid=g.uid,
+    )
+    s.add(image)
+
+    # set banner_url to user profile
+    user = s.query(User).filter(User.uid==g.uid).first()
+    if not user: return {'message': 'user not found' }, 404
+
+    user.avatar_url = url
 
     try: s.commit()
     except SQLAlchemyError: return { 'message': 'something wrong' }, 500

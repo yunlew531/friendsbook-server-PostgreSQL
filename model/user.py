@@ -18,7 +18,8 @@ class User(BASE):
   age = Column(Integer)
   created_at = Column(Float, default=time)
   last_seen = Column(Float)
-  banner_img = Column(String)
+  banner_url = Column(String)
+  avatar_url = Column(String)
 
   articles = relationship('Article')
   comments = relationship('Comment')

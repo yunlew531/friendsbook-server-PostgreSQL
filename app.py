@@ -3,7 +3,7 @@ from flask_restful import Api
 from dotenv import load_dotenv
 load_dotenv()
 from flask_cors import CORS
-from api.image import ImageApi, ImagesApi, BannerImgApi
+from api.image import ImageApi, ImagesApi, BannerImgApi, AvatarImgApi
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi, UserApi
 from api.article import ArticleApi, ArticlesByUidApi, ArticleThumbsUpApi, CommentApi, CommentsApi
@@ -32,6 +32,7 @@ api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELET
 api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
 api.add_resource(ImageApi, '/api/image', methods=['POST'], endpoint='image')
 api.add_resource(BannerImgApi, '/api/image/banner', methods=['POST'], endpoint='banner_image')
+api.add_resource(AvatarImgApi, '/api/image/avatar', methods=['POST'], endpoint='avatar_image')
 api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint='images')
 api.add_resource(ArticlesByUidApi, '/api/articles/<user_uid>', methods=['GET'], endpoint='articles_by_uid')
 
