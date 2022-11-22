@@ -3,10 +3,10 @@ from flask_restful import Api
 from dotenv import load_dotenv
 load_dotenv()
 from flask_cors import CORS
-from api.image import ImageApi, ImagesApi
+from api.image import ImageApi, ImagesApi, BannerImgApi
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi, UserApi
-from api.article import ArticleApi, ArticlesByUid, ArticleThumbsUpApi, CommentApi, CommentsApi
+from api.article import ArticleApi, ArticlesByUidApi, ArticleThumbsUpApi, CommentApi, CommentsApi
 from api.friend import RecommendFriendApi, FriendApi, FriendsApi
 
 app = Flask(__name__)
@@ -31,8 +31,9 @@ api.add_resource(RecommendFriendApi, '/api/friends/recommend/<num>', methods=['G
 api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELETE'], endpoint='friend')
 api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
 api.add_resource(ImageApi, '/api/image', methods=['POST'], endpoint='image')
+api.add_resource(BannerImgApi, '/api/image/banner', methods=['POST'], endpoint='banner_image')
 api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint='images')
-api.add_resource(ArticlesByUid, '/api/articles/<user_uid>', methods=['GET'], endpoint='articles_by_uid')
+api.add_resource(ArticlesByUidApi, '/api/articles/<user_uid>', methods=['GET'], endpoint='articles_by_uid')
 
 if __name__ == '__main__':
   app.run()

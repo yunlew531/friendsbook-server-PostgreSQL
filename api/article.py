@@ -211,7 +211,7 @@ class ArticleThumbsUpApi(Resource):
 
     return { 'message': 'success' }, 200
 
-class ArticlesByUid(Resource):
+class ArticlesByUidApi(Resource):
   def get(self, user_uid):
     s = Session()
     user = s.query(User).filter(User.uid==user_uid).first()

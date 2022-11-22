@@ -10,7 +10,7 @@ class UserApi(Resource):
   def get(self, user_uid):
     s = Session()
     user_row = s.query(
-      User.uid, User.name, User.age, User.email, User.created_at, User.nickname
+      User.uid, User.name, User.age, User.email, User.created_at, User.nickname, User.banner_img
     ).filter(User.uid==user_uid).first()
     s.close()
     if not user_row: return { 'message': 'user not found' }, 404
@@ -24,7 +24,7 @@ class UserAuthApi(Resource):
   def get(self):
     s = Session()
     user_row = s.query(
-      User.uid, User.name, User.age, User.email, User.created_at, User.nickname
+      User.uid, User.name, User.age, User.email, User.created_at, User.nickname, User.banner_img
     ).filter(User.uid==g.uid).first()
     s.close()
     if not user_row: return { 'message': 'user not found' }, 404

@@ -27,7 +27,6 @@ googleapis-common-protos==1.57.0
 greenlet==2.0.1
 gunicorn==20.1.0
 h11==0.12.0
-home-assistant-bluetooth==1.6.0
 homeassistant==2022.11.3
 httpcore==0.15.0
 httplib2==0.21.0
