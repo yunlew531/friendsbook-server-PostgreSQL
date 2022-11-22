@@ -31,6 +31,7 @@ api.add_resource(RecommendFriendApi, '/api/friends/recommend/<num>', methods=['G
 api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELETE'], endpoint='friend')
 api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
 api.add_resource(ImageApi, '/api/image', methods=['POST'], endpoint='image')
+api.add_resource(ImageApi, '/api/image/<image_id>', methods=['DELETE'], endpoint='image_id')
 api.add_resource(BannerImgApi, '/api/image/banner', methods=['POST'], endpoint='banner_image')
 api.add_resource(AvatarImgApi, '/api/image/avatar', methods=['POST'], endpoint='avatar_image')
 api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint='images')

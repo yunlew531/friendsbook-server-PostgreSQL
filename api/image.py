@@ -39,6 +39,28 @@ class ImageApi(Resource):
 
     return { 'message': 'success', 'url': url }
 
+  # delete image by image_id
+  @login_required
+  def delete(self, image_id):
+    s = Session()
+    image = s.query(Image).filter(Image.id==image_id).first()
+    if not image: return { 'message': 'image not found' }, 404
+    if image.user_uid != g.uid: return { 'message': 'permission denied' }, 403
+
+    # PostgreSQL delete
+    s.delete(image)
+
+    # firebase storage delete
+    ref = storage.child()
+    ref.delete('{0}/{1}'.format(g.uid, image_id))
+
+    try: s.commit()
+    except SQLAlchemyError: return { 'message': 'something wrong' }, 500
+    finally: s.close()
+
+    return { 'message': 'success' }
+
+
 class ImagesApi(Resource):
   def get(self, user_uid):
     s = Session()

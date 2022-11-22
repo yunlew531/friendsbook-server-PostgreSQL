@@ -49,10 +49,6 @@ pyasn1-modules==0.2.8
 pycparser==2.21
 pycryptodome==3.15.0
 PyJWT==2.5.0
-pyobjc-core==8.5.1
-pyobjc-framework-Cocoa==8.5.1
-pyobjc-framework-CoreBluetooth==8.5.1
-pyobjc-framework-libdispatch==8.5.1
 pyparsing==3.0.9
 python-dotenv==0.21.0
 python-jwt==4.0.0
