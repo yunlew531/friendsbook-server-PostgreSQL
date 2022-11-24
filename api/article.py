@@ -3,7 +3,7 @@ from flask_restful import Resource, request
 from config.db import Session
 from sqlalchemy.exc import SQLAlchemyError
 from decorator.login_required import login_required
-from model.article import Article, Comment, ArticleThumbsUp
+from model.article import Article, Comment, ArticleLike
 from model.user import User
 
 class ArticleApi(Resource):
@@ -14,7 +14,7 @@ class ArticleApi(Resource):
     s = Session()
 
     # article join author
-    articles_rows = s.query(Article, User.name).join(
+    articles_rows = s.query(Article, User.name, User.avatar_url).join(
       User, Article.user_uid==User.uid
     ).filter(Article.user_uid==g.uid)
 
@@ -24,25 +24,26 @@ class ArticleApi(Resource):
       article_dict = result_group.get('Article').query_to_dict()
       article_id = article_dict.get('id')
 
-      # article join thumbs_up
-      thumbs_up_rows = s.query(ArticleThumbsUp, User.name, User.uid).join(
-        User, ArticleThumbsUp.user_uid==User.uid
-      ).filter(ArticleThumbsUp.article_id==article_id)
+      # article join article_likes
+      article_likes_rows = s.query(ArticleLike, User.name, User.uid, User.avatar_url).join(
+        User, ArticleLike.user_uid==User.uid
+      ).filter(ArticleLike.article_id==article_id)
 
-      thumbs_up_list = []
-      for thumbs_up_row in thumbs_up_rows:
-        thumbs_up_result = thumbs_up_row._asdict()
-        thumbs_up_dict = thumbs_up_result.get('ArticleThumbsUp').query_to_dict()
-        thumbs_up_list.append({
-          **thumbs_up_dict,
+      article_likes_list = []
+      for article_likes_row in article_likes_rows:
+        article_likes_result = article_likes_row._asdict()
+        article_likes_dict = article_likes_result.get('ArticleLike').query_to_dict()
+        article_likes_list.append({
+          **article_likes_dict,
           'author': {
-            'uid': thumbs_up_result.get('uid'),
-            'name': thumbs_up_result.get('name')
+            'uid': article_likes_result.get('uid'),
+            'name': article_likes_result.get('name'),
+            'avatar_url': article_likes_result.get('avatar_url')
           }
         })
 
       # article join comments
-      comment_rows = s.query(Comment, User.name, User.uid).join(
+      comment_rows = s.query(Comment, User.name, User.uid, User.avatar_url).join(
         User, Comment.user_uid==User.uid
       ).filter(Comment.article_id==article_id)
 
@@ -54,7 +55,8 @@ class ArticleApi(Resource):
           **comment_dict,
           'author': {
             'uid': comment_result_group.get('uid'),
-            'name': comment_result_group.get('name')
+            'name': comment_result_group.get('name'),
+            'avatar_url': comment_result_group.get('avatar_url')
           },
         })
 
@@ -62,10 +64,11 @@ class ArticleApi(Resource):
         **article_dict,
         'author': {
           'name': result_group.get('name'),
-          'uid': g.uid
+          'uid': g.uid,
+          'avatar_url': result_group.get('avatar_url')
         },
         'comments': comments_list,
-        'thumbs_up': thumbs_up_list
+        'article_likes': article_likes_list
       })
     s.close()
 
@@ -99,9 +102,9 @@ class ArticleApi(Resource):
     for comment in comments:
       s.delete(comment)
 
-    thumbs_up = s.query(ArticleThumbsUp).filter(ArticleThumbsUp.article_id==article_id)
-    for thumb in thumbs_up:
-      s.delete(thumb)
+    article_likes = s.query(ArticleLike).filter(ArticleLike.article_id==article_id)
+    for article_like in article_likes:
+      s.delete(article_like)
 
     s.delete(article)
 
@@ -145,7 +148,7 @@ class CommentsApi(Resource):
     article = s.query(Article).filter(Article.id==article_id).first()
     if not article: return { 'message':'article not found' }, 404
 
-    comment_rows = s.query(Comment, User.name, User.uid).join(
+    comment_rows = s.query(Comment, User.name, User.uid, User.avatar_url).join(
       User, Comment.user_uid==User.uid
     ).filter(Comment.article_id==article_id)
     s.close()
@@ -158,36 +161,38 @@ class CommentsApi(Resource):
         **comment_query.query_to_dict(),
         'author': {
           'uid': result.get('uid'),
-          'name': result.get('name')
+          'name': result.get('name'),
+          'avatar_url': result.get('avatar_url'),
         }
       })
 
     return { 'message': 'success', 'comments': comment_list }
 
-class ArticleThumbsUpApi(Resource):
-  # get thumbs_up by article id
+class ArticleLikeApi(Resource):
+  # get article_likes by article id
   def get(self, article_id):
     s = Session()
     article = s.query(Article).filter(Article.id==article_id).first()
     if not article: return { 'message': 'article not found' }, 404
 
-    thumbs_up_rows = s.query(ArticleThumbsUp, User.name, User.uid).join(
-      User, ArticleThumbsUp.user_uid==User.uid
-    ).filter(ArticleThumbsUp.article_id==article_id)
+    article_likes_rows = s.query(ArticleLike, User.name, User.uid, User.avatar_url).join(
+      User, ArticleLike.user_uid==User.uid
+    ).filter(ArticleLike.article_id==article_id)
 
-    thumbs_up_list = []
-    for thumbs_up_row in thumbs_up_rows:
-      thumbs_up_result = thumbs_up_row._asdict()
-      thumbs_up_dict = {
-        **thumbs_up_result.get('ArticleThumbsUp').query_to_dict(),
+    article_likes_list = []
+    for article_likes_row in article_likes_rows:
+      article_likes_result = article_likes_row._asdict()
+      article_likes_dict = {
+        **article_likes_result.get('ArticleLike').query_to_dict(),
         'author': {
-          'uid': thumbs_up_result.get('uid'),
-          'name': thumbs_up_result.get('name')
+          'uid': article_likes_result.get('uid'),
+          'name': article_likes_result.get('name'),
+          'avatar_url': article_likes_result.get('avatar_url'),
         }
       }
-      thumbs_up_list.append(thumbs_up_dict)
+      article_likes_list.append(article_likes_dict)
 
-    return { 'message': 'success', 'thumbs_up': thumbs_up_list }
+    return { 'message': 'success', 'article_likes': article_likes_list }
 
   # thumbs up article
   @login_required
@@ -195,15 +200,15 @@ class ArticleThumbsUpApi(Resource):
     s = Session()
     article = s.query(Article).filter(Article.id==article_id).first()
     if not article: return { 'message': 'article not found' }, 404
-    thumbs_up_exist = s.query(ArticleThumbsUp).filter(ArticleThumbsUp.article_id==article_id).filter(ArticleThumbsUp.user_uid==g.uid).first()
+    article_like_exist = s.query(ArticleLike).filter(ArticleLike.article_id==article_id).filter(ArticleLike.user_uid==g.uid).first()
     
-    if thumbs_up_exist: 
-      s.delete(thumbs_up_exist)
+    if article_like_exist: 
+      s.delete(article_like_exist)
     else:
-      thumbs_up = ArticleThumbsUp()
-      thumbs_up.user_uid = g.uid
-      thumbs_up.article_id = article_id
-      s.add(thumbs_up)
+      article_like = ArticleLike()
+      article_like.user_uid = g.uid
+      article_like.article_id = article_id
+      s.add(article_like)
 
     try: s.commit()
     except SQLAlchemyError: return { 'message': 'something wrong' }, 500
@@ -218,7 +223,7 @@ class ArticlesByUidApi(Resource):
     if not user: return { 'message': 'user not found' }, 404
     
     # article join author
-    articles_rows = s.query(Article, User.name).join(
+    articles_rows = s.query(Article, User.name, User.avatar_url).join(
       User, Article.user_uid==User.uid
     ).filter(Article.user_uid==user_uid)
 
@@ -228,25 +233,26 @@ class ArticlesByUidApi(Resource):
       article_dict = result_group.get('Article').query_to_dict()
       article_id = article_dict.get('id')
 
-      # article join thumbs_up
-      thumbs_up_rows = s.query(ArticleThumbsUp, User.name, User.uid).join(
-        User, ArticleThumbsUp.user_uid==User.uid
-      ).filter(ArticleThumbsUp.article_id==article_id)
+      # article join article_likes
+      article_likes_rows = s.query(ArticleLike, User.name, User.uid, User.avatar_url).join(
+        User, ArticleLike.user_uid==User.uid
+      ).filter(ArticleLike.article_id==article_id)
 
-      thumbs_up_list = []
-      for thumbs_up_row in thumbs_up_rows:
-        thumbs_up_result = thumbs_up_row._asdict()
-        thumbs_up_dict = thumbs_up_result.get('ArticleThumbsUp').query_to_dict()
-        thumbs_up_list.append({
-          **thumbs_up_dict,
+      article_likes_list = []
+      for article_likes_row in article_likes_rows:
+        article_likes_result = article_likes_row._asdict()
+        article_likes_dict = article_likes_result.get('ArticleLike').query_to_dict()
+        article_likes_list.append({
+          **article_likes_dict,
           'author': {
-            'uid': thumbs_up_result.get('uid'),
-            'name': thumbs_up_result.get('name')
+            'uid': article_likes_result.get('uid'),
+            'name': article_likes_result.get('name'),
+            'avatar_url': article_likes_result.get('avatar_url')
           }
         })
 
       # article join comments
-      comment_rows = s.query(Comment, User.name, User.uid).join(
+      comment_rows = s.query(Comment, User.name, User.uid, User.avatar_url).join(
         User, Comment.user_uid==User.uid
       ).filter(Comment.article_id==article_id)
 
@@ -258,7 +264,8 @@ class ArticlesByUidApi(Resource):
           **comment_dict,
           'author': {
             'uid': comment_result_group.get('uid'),
-            'name': comment_result_group.get('name')
+            'name': comment_result_group.get('name'),
+            'avatar_url': comment_result_group.get('avatar_url')
           },
         })
 
@@ -266,10 +273,11 @@ class ArticlesByUidApi(Resource):
         **article_dict,
         'author': {
           'name': result_group.get('name'),
-          'uid': user_uid
+          'uid': user_uid,
+          'avatar_url': result_group.get('avatar_url'),
         },
         'comments': comments_list,
-        'thumbs_up': thumbs_up_list
+        'article_likes': article_likes_list
       })
     s.close()
 

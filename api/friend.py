@@ -107,10 +107,10 @@ class FriendsApi(Resource):
   @login_required
   def get(self):
     s = Session()
-    situation_one = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen).join(
+    situation_one = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen, User.avatar_url).join(
       User, Friend.usera_uid==User.uid
     ).filter(Friend.userb_uid==g.uid)
-    situation_two = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen).join(
+    situation_two = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen, User.avatar_url).join(
       User, Friend.userb_uid==User.uid
     ).filter(Friend.usera_uid==g.uid)
     s.close()
@@ -125,6 +125,7 @@ class FriendsApi(Resource):
         'name': situation_one_result.get('name'),
         'nickname': situation_one_result.get('nickname'),
         'last_seen': situation_one_result.get('last_seen'),
+        'avatar_url': situation_one_result.get('avatar_url'),
       })
     for i in situation_two:
       situation_two_result = i._asdict()
@@ -135,6 +136,7 @@ class FriendsApi(Resource):
         'name': situation_two_result.get('name'),
         'nickname': situation_two_result.get('nickname'),
         'last_seen': situation_two_result.get('last_seen'),
+        'avatar_url': situation_two_result.get('avatar_url'),
       })
 
     return { 'message':'success', 'friends': friend_list }

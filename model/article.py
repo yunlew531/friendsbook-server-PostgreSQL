@@ -16,7 +16,7 @@ class Article(BASE):
   user_uid = Column(String(36), ForeignKey('users.uid'))
 
   comments = relationship('Comment')
-  thumbs_up = relationship('ArticleThumbsUp')
+  article_likes = relationship('ArticleLike')
 
 class Comment(BASE):
   __tablename__ = 'comments'
@@ -28,8 +28,8 @@ class Comment(BASE):
   article_id = Column(Integer, ForeignKey('articles.id'))
   user_uid = Column(String(36), ForeignKey('users.uid'))
 
-class ArticleThumbsUp(BASE):
-  __tablename__ = 'thumbs_up'
+class ArticleLike(BASE):
+  __tablename__ = 'article_likes'
 
   id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
   user_uid = Column(String(36), ForeignKey('users.uid'))

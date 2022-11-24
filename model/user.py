@@ -23,7 +23,7 @@ class User(BASE):
 
   articles = relationship('Article')
   comments = relationship('Comment')
-  thumbs_up = relationship('ArticleThumbsUp')
+  article_likes = relationship('ArticleLike')
   images = relationship('Image')
 
   def get_name(self):
