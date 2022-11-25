@@ -60,15 +60,19 @@ class RecommendFriendApi(Resource):
 class FriendApi(Resource):
   # add friend by uid
   @login_required
-  def get(self, user_uid):
+  def post(self, user_uid):
     s = Session()
     user = s.query(User).filter(User.uid==user_uid).first()
     if not user: return { 'message': 'user not found' }, 404
 
+    # you invited be friend
     situation_one = s.query(Friend).filter(Friend.usera_uid==g.uid).filter(Friend.userb_uid==user_uid).first()
+    # you received request to be friend
     situation_two = s.query(Friend).filter(Friend.userb_uid==g.uid).filter(Friend.usera_uid==user_uid).first()
     is_friend = situation_one or situation_two
-    if is_friend: return { 'message': 'you are already friends' }, 403
+    if is_friend:
+      if is_friend.connected: return { 'message': 'you are already friends' }, 403
+      else: return { 'message': 'you sent the request before' }, 403
 
     friend = Friend(
       usera_uid=g.uid,
@@ -88,7 +92,9 @@ class FriendApi(Resource):
     user = s.query(User).filter(User.uid==user_uid).first()
     if not user: return { 'message': 'user not found' }, 404
 
+    # you invited be friend
     situation_one = s.query(Friend).filter(Friend.usera_uid==g.uid).filter(Friend.userb_uid==user_uid).first()
+    # you received request to be friend
     situation_two = s.query(Friend).filter(Friend.userb_uid==g.uid).filter(Friend.usera_uid==user_uid).first()
     is_friend = situation_one or situation_two
     if not is_friend: return { 'message': "you're not friends" }, 403
@@ -107,37 +113,58 @@ class FriendsApi(Resource):
   @login_required
   def get(self):
     s = Session()
+
+    # you invited be friend
     situation_one = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen, User.avatar_url).join(
-      User, Friend.usera_uid==User.uid
-    ).filter(Friend.userb_uid==g.uid)
-    situation_two = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen, User.avatar_url).join(
       User, Friend.userb_uid==User.uid
     ).filter(Friend.usera_uid==g.uid)
+    # you received request to be friend
+    situation_two = s.query(Friend, User.uid, User.name, User.nickname, User.last_seen, User.avatar_url).join(
+      User, Friend.usera_uid==User.uid
+    ).filter(Friend.userb_uid==g.uid)
     s.close()
 
-    friend_list = []
+    friend_data = {
+      'connected': [],
+      'received': [],
+      'sent': [],
+    }
+
     for i in situation_one:
       situation_one_result = i._asdict()
       friend1_dict = situation_one_result.get('Friend').query_to_dict()
-      friend_list.append({
-        'became_friend_time': friend1_dict.get('became_friend_time'),
-        'uid': situation_one_result.get('uid'),
-        'name': situation_one_result.get('name'),
-        'nickname': situation_one_result.get('nickname'),
-        'last_seen': situation_one_result.get('last_seen'),
-        'avatar_url': situation_one_result.get('avatar_url'),
-      })
+      friend1 = {
+          'became_friend_time': friend1_dict.get('became_friend_time'),
+          'invited_time': friend1_dict.get('invited_time'),
+          'connected': friend1_dict.get('connected'),
+          'uid': situation_one_result.get('uid'),
+          'name': situation_one_result.get('name'),
+          'nickname': situation_one_result.get('nickname'),
+          'last_seen': situation_one_result.get('last_seen'),
+          'avatar_url': situation_one_result.get('avatar_url'),
+        }
+      if friend1_dict['connected']:
+        friend_data['connected'].append(friend1)
+      else:
+        friend_data['sent'].append(friend1)
+
     for i in situation_two:
       situation_two_result = i._asdict()
       friend2_dict = situation_two_result.get('Friend').query_to_dict()
-      friend_list.append({
+      friend2 = {
         'became_friend_time': friend2_dict.get('became_friend_time'),
+        'invited_time': friend2_dict.get('invited_time'),
+        'connected': friend2_dict.get('connected'),
         'uid': situation_two_result.get('uid'),
         'name': situation_two_result.get('name'),
         'nickname': situation_two_result.get('nickname'),
         'last_seen': situation_two_result.get('last_seen'),
         'avatar_url': situation_two_result.get('avatar_url'),
-      })
-
-    return { 'message':'success', 'friends': friend_list }
+      }
+      if friend2_dict['connected']:
+        friend_data['connected'].append(friend2)
+      else:
+        friend_data['received'].append(friend2)
+   
+    return { 'message':'success', 'friends': friend_data }
 

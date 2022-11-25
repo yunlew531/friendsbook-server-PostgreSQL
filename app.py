@@ -28,7 +28,7 @@ api.add_resource(CommentApi, '/api/article/<article_id>/comment', methods=['POST
 api.add_resource(CommentsApi, '/api/article/<article_id>/comments', methods=['GET'], endpoint='comments')
 api.add_resource(ArticleLikeApi, '/api/article/<article_id>/thumbsup', methods=['GET', 'POST'], endpoint='article_like')
 api.add_resource(RecommendFriendApi, '/api/friends/recommend/<num>', methods=['GET'], endpoint='friends_recommend')
-api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['GET', 'DELETE'], endpoint='friend')
+api.add_resource(FriendApi, '/api/friend/add/<user_uid>', methods=['POST', 'DELETE'], endpoint='friend')
 api.add_resource(FriendsApi, '/api/friends', methods=['GET'], endpoint='friends')
 api.add_resource(ImageApi, '/api/image', methods=['POST'], endpoint='image')
 api.add_resource(ImageApi, '/api/image/<image_id>', methods=['DELETE'], endpoint='image_id')
