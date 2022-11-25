@@ -57,8 +57,8 @@ class RecommendFriendApi(Resource):
     
     return { 'message': 'success', 'users': user_list }
 
-class FriendApi(Resource):
-  # add friend by uid
+class FriendInviteApi(Resource):
+  # create friend invite by uid
   @login_required
   def post(self, user_uid):
     s = Session()
@@ -85,24 +85,41 @@ class FriendApi(Resource):
 
     return { 'message':'success' }
 
-  # delete friend by uid
+  # remove friend invite by friend_id
+  # refuse invite or cancel invite
   @login_required
-  def delete(self, user_uid):
+  def delete(self, friend_id):
     s = Session()
-    user = s.query(User).filter(User.uid==user_uid).first()
-    if not user: return { 'message': 'user not found' }, 404
+    friend = s.query(Friend).filter(Friend.id==friend_id).first()
+    if not friend: return { 'message': "friend_id not found" }, 404
 
-    # you invited be friend
-    situation_one = s.query(Friend).filter(Friend.usera_uid==g.uid).filter(Friend.userb_uid==user_uid).first()
-    # you received request to be friend
-    situation_two = s.query(Friend).filter(Friend.userb_uid==g.uid).filter(Friend.usera_uid==user_uid).first()
-    is_friend = situation_one or situation_two
-    if not is_friend: return { 'message': "you're not friends" }, 403
+    try:
+      if friend.usera_uid==g.uid or friend.userb_uid==g.uid:
+        s.delete(friend)
+        s.commit()
+      else:
+        return { 'message': "you are not in this friend_id" }, 403
+    except SQLAlchemyError: return {'message':'something wrong' }, 500
+    finally: s.close()
 
-    friend = situation_one or situation_two
+    if friend.usera_uid==g.uid: code = 1  # cancel invite
+    else: code = 2  # refuse invite
 
-    s.delete(friend)
-    try: s.commit()
+    return { 'message': 'success', 'code': code }
+
+class FriendShipApi(Resource):
+  @login_required
+  def delete(self, friend_id):
+    s = Session()
+    friend = s.query(Friend).filter(Friend.id==friend_id).first()
+    if not friend: return { 'message': "friend_id not found" }, 404
+
+    try:
+      if friend.usera_uid==g.uid or friend.userb_uid==g.uid:
+        s.delete(friend)
+        s.commit()
+      else:
+        return { 'message': "you are not in this friend_id" }, 403
     except SQLAlchemyError: return {'message':'something wrong' }, 500
     finally: s.close()
 
@@ -134,6 +151,7 @@ class FriendsApi(Resource):
       situation_one_result = i._asdict()
       friend1_dict = situation_one_result.get('Friend').query_to_dict()
       friend1 = {
+          'id': friend1_dict.get('id'),
           'became_friend_time': friend1_dict.get('became_friend_time'),
           'invited_time': friend1_dict.get('invited_time'),
           'connected': friend1_dict.get('connected'),
@@ -152,6 +170,7 @@ class FriendsApi(Resource):
       situation_two_result = i._asdict()
       friend2_dict = situation_two_result.get('Friend').query_to_dict()
       friend2 = {
+        'id': friend2_dict.get('id'),
         'became_friend_time': friend2_dict.get('became_friend_time'),
         'invited_time': friend2_dict.get('invited_time'),
         'connected': friend2_dict.get('connected'),
