@@ -94,7 +94,7 @@ class FriendInviteApi(Resource):
     if not friend: return { 'message': 'friend_id not found' }, 404
     if friend.userb_uid!= g.uid: return { 'message': "you're not invited in this friend_id" }, 403
 
-    friend.invited_time = time()
+    friend.became_friend_time = time()
     friend.connected = True
 
     try: s.commit()
@@ -143,7 +143,7 @@ class FriendShipApi(Resource):
     return { 'message': 'success' }
 
 class FriendsApi(Resource):
-  # get friends list by jwt token
+  # get connected, received, sent friends dict by jwt token
   @login_required
   def get(self):
     s = Session()
@@ -204,3 +204,41 @@ class FriendsApi(Resource):
    
     return { 'message':'success', 'friends': friend_data }
 
+class FriendsConnectedByUidApi(Resource):
+  # get connected friends list by uid
+  def get(self, user_uid):
+    s = Session()
+    user = s.query(User).filter(User.uid==user_uid).first()
+    if not user: return { 'message': 'user not found' }, 404
+    connected_friends = []
+
+    # you invited be friend
+    situation_one = s.query(Friend, User.uid, User.name, User.nickname, User.avatar_url).join(
+      User, Friend.userb_uid==User.uid
+    ).filter(Friend.usera_uid==user_uid).filter(Friend.connected==True)
+    for friend in situation_one:
+      friend1_dict = friend._asdict()
+      connected_friends.append({
+        **friend1_dict.get('Friend').query_to_dict(),
+        'uid': friend1_dict.get('uid'),
+        'name': friend1_dict.get('name'),
+        'nickname': friend1_dict.get('nickname'),
+        'avatar_url': friend1_dict.get('avatar_url'),
+      })
+   
+    # you received request to be friend
+    situation_two = s.query(Friend, User.uid, User.name, User.nickname, User.avatar_url).join(
+      User, Friend.usera_uid==User.uid
+    ).filter(Friend.userb_uid==user_uid).filter(Friend.connected==True)
+    for friend in situation_two:
+      friend2_dict = friend._asdict()
+      connected_friends.append({
+        **friend2_dict.get('Friend').query_to_dict(),
+        'uid': friend2_dict.get('uid'),
+        'name': friend2_dict.get('name'),
+        'nickname': friend2_dict.get('nickname'),
+        'avatar_url': friend2_dict.get('avatar_url'),
+      })
+
+    s.close()
+    return { 'message': 'success', 'friends': connected_friends }
