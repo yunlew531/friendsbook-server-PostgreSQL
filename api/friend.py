@@ -6,9 +6,10 @@ from model.friend import Friend
 from model.user import User
 from random import randint
 from sqlalchemy.exc import SQLAlchemyError
+from time import time
 
 class RecommendFriendApi(Resource):
-  # return recommend friends
+  # return recommend friends list
   @login_required
   def get(self, num):
     pick_num = int(num)
@@ -83,6 +84,22 @@ class FriendInviteApi(Resource):
     except SQLAlchemyError: return { 'message': 'something wrong' }, 500
     finally: s.close()
 
+    return { 'message':'success' }
+
+  # agree friend connected
+  @login_required
+  def patch(self, friend_id):
+    s = Session()
+    friend = s.query(Friend).filter(Friend.id==friend_id).first()
+    if not friend: return { 'message': 'friend_id not found' }, 404
+    if friend.userb_uid!= g.uid: return { 'message': "you're not invited in this friend_id" }, 403
+
+    friend.invited_time = time()
+    friend.connected = True
+
+    try: s.commit()
+    except SQLAlchemyError: return {'message':'something wrong' }, 500
+    finally: s.close()
     return { 'message':'success' }
 
   # remove friend invite by friend_id
