@@ -2,19 +2,36 @@ from flask import Flask
 from flask_restful import Api
 from dotenv import load_dotenv
 load_dotenv()
+from config.db import Session
+from model.chat import Chatroom
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit, join_room
 from api.image import ImageApi, ImagesApi, BannerImgApi, AvatarImgApi
 from api.account import AccountApi, LoginLogoutApi
 from api.user import UserAuthApi, UserApi
 from api.article import ArticleApi, ArticlesByUidApi, ArticleLikeApi, CommentApi, CommentsApi
 from api.friend import FriendsConnectedByUidApi, RecommendFriendApi, FriendInviteApi, FriendsApi, FriendShipApi
+from api.chat import ChatroomsApi
 
 app = Flask(__name__)
 api = Api(app)
 
 # cors
 cors = CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000']}})
+socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000'])
 
+@socketio.on('msg')
+def my_event(message):
+  emit('msgs', message, broadcast=True)
+
+@socketio.on('join chatrooms')
+def join_chatrooms(uid):
+  s = Session()
+  chatrooms = s.query(Chatroom).filter(Chatroom.members.any(uid)).all()
+  for chatroom in chatrooms:
+    join_room(chatroom.get('id'))
+  emit('msgs', 'hello m', to='some room')
+  
 # api
 # user api
 api.add_resource(UserAuthApi, '/api/user', methods=['GET'], endpoint='personal_user_profile')
@@ -47,5 +64,8 @@ api.add_resource(BannerImgApi, '/api/image/banner', methods=['POST'], endpoint='
 api.add_resource(AvatarImgApi, '/api/image/avatar', methods=['POST'], endpoint='avatar_image')
 api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint='images')
 
+# chatrooms api
+api.add_resource(ChatroomsApi, '/api/chatrooms', methods=['GET'], endpoint='chatrooms')
+
 if __name__ == '__main__':
-  app.run()
+  socketio.run(app, port=5500, debug=True)

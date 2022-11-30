@@ -10,7 +10,7 @@ class Friend(BASE):
   id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
   usera_uid = Column(String(36), ForeignKey('users.uid'))
   userb_uid = Column(String(36), ForeignKey('users.uid'))
-  became_friend_time = Column(Float)
+  connected_time = Column(Float)
   invited_time = Column(Float, default=time)
   connected = Column(Boolean, default=False)
 

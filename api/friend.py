@@ -94,7 +94,7 @@ class FriendInviteApi(Resource):
     if not friend: return { 'message': 'friend_id not found' }, 404
     if friend.userb_uid!= g.uid: return { 'message': "you're not invited in this friend_id" }, 403
 
-    friend.became_friend_time = time()
+    friend.connected_time = time()
     friend.connected = True
 
     try: s.commit()
@@ -169,7 +169,7 @@ class FriendsApi(Resource):
       friend1_dict = situation_one_result.get('Friend').query_to_dict()
       friend1 = {
           'id': friend1_dict.get('id'),
-          'became_friend_time': friend1_dict.get('became_friend_time'),
+          'connected_time': friend1_dict.get('connected_time'),
           'invited_time': friend1_dict.get('invited_time'),
           'connected': friend1_dict.get('connected'),
           'uid': situation_one_result.get('uid'),
@@ -188,7 +188,7 @@ class FriendsApi(Resource):
       friend2_dict = situation_two_result.get('Friend').query_to_dict()
       friend2 = {
         'id': friend2_dict.get('id'),
-        'became_friend_time': friend2_dict.get('became_friend_time'),
+        'connected_time': friend2_dict.get('connected_time'),
         'invited_time': friend2_dict.get('invited_time'),
         'connected': friend2_dict.get('connected'),
         'uid': situation_two_result.get('uid'),
