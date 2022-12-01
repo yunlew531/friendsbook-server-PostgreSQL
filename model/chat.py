@@ -1,16 +1,18 @@
 from config.db import BASE
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, ARRAY
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from time import time
 
 class Chatroom(BASE):
   __tablename__ = 'chatrooms'
 
-  id = Column(Integer, primary_key=True)
+  id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
   name = Column(String(10))
   members = Column(ARRAY(String(36)), nullable=False)
   created_at = Column(Float, default=time)
   type = Column(Integer, nullable=False) # 1 = one to one, 2 = multiple
+  avatar_url = Column(String)
 
   chats = relationship('Chat')
 
@@ -23,4 +25,4 @@ class Chat(BASE):
   content = Column(String(300), nullable=False)
   created_at = Column(Float, default=time)
   status = Column(Integer, default=1) # 1 = normal, 2 = delete
-  read_user = Column(ARRAY(String(36)))
+  read_users = Column(ARRAY(String(36)))
