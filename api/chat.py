@@ -4,8 +4,10 @@ from config.db import Session
 from decorator.login_required import login_required
 from sqlalchemy.exc import SQLAlchemyError
 from model.chat import Chatroom, Chat
+from model.user import User
 
 class ChatroomsApi(Resource):
+  # get chatrooms with chats
   @login_required
   def get(self):
     s = Session()
@@ -14,11 +16,37 @@ class ChatroomsApi(Resource):
     for chatroom in chatrooms_query:
       chatroom = chatroom.query_to_dict()
       chats_list = []
-      chatrooms_query = s.query(Chat).filter(Chat.chatroom_id==chatroom.get('id')).order_by(Chat.created_at)
-      for chat in chatrooms_query:
-        chat = chat.query_to_dict()
-        chats_list.append(chat)
+      chatrooms_rows = s.query(Chat, User.uid, User.name, User.nickname, User.avatar_url).join(
+        User, Chat.user_uid==User.uid
+      ).filter(Chat.chatroom_id==chatroom.get('id')).order_by(Chat.created_at)
+      for chatrooms_row in chatrooms_rows:
+        chat_result = chatrooms_row._asdict()
+        print(chat_result)
+        chats_list.append({
+          **chat_result.get('Chat').query_to_dict(),
+          'author': {
+            'name': chat_result.get('name'),
+            'nickname': chat_result.get('nickname'),
+            'uid': chat_result.get('uid'),
+            'avatar_url': chat_result.get('avatar_url'),
+          }
+        })
       chatroom['chats'] = chats_list
+
+      # type one to one get chatroom name (user name)
+      type = chatroom.get('type')
+      if type == 1:
+        members = chatroom.get('members')
+        for m in members:
+          if not m == g.uid:
+            other_side_user = m
+
+        user_row = s.query(User.name, User.nickname).filter(User.uid==other_side_user).first()
+        user_dict = user_row._asdict()
+        nickname = user_dict.get('nickname')
+        name = user_dict.get('name')
+        chatroom['name'] = nickname or name        
+
       chatrooms_list.append(chatroom)
       
     return { 'message': 'success', 'chatrooms': chatrooms_list }
