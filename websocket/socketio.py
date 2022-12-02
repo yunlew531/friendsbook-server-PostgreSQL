@@ -4,6 +4,7 @@ from config.db import Session
 from model.chat import Chat, Chatroom
 from sqlalchemy.exc import SQLAlchemyError
 
+# broadcast to all connected clients
 @socketio.on('broadcast')
 def broadcast(message):
   emit('broadcast', message, broadcast=True)
@@ -32,7 +33,6 @@ def chat(data):
   chat.user_uid = data.get('user_uid')
   s = Session()
   s.add(chat)
-  print(data)
 
   try: 
     s.commit()

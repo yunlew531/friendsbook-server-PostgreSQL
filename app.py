@@ -18,9 +18,6 @@ api = Api(app)
 cors = CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000', 'https://yunlew531.github.io/friendsbook']}})
 socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000', 'https://yunlew531.github.io/friendsbook'])
 
-# WebSocket
-import websocket.socketio
-
 # api
 # user api
 api.add_resource(UserAuthApi, '/api/user', methods=['GET'], endpoint='personal_user_profile')
@@ -56,6 +53,3 @@ api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint=
 # chatrooms api
 api.add_resource(ChatroomsApi, '/api/chatrooms', methods=['GET'], endpoint='chatrooms')
 api.add_resource(ChatroomApi, '/api/chatroom', methods=['POST'], endpoint='chatroom')
-
-if __name__ == '__main__':
-  socketio.run(app, port=5500, debug=True)
