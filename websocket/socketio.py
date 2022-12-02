@@ -1,4 +1,7 @@
-from __main__ import socketio
+try:
+  from __main__ import socketio
+except ImportError:
+  from socketservice import socketio
 from flask_socketio import emit, join_room
 from config.db import Session
 from model.chat import Chat, Chatroom
@@ -16,7 +19,7 @@ def join_chatrooms(uid):
   s.close()
   for chatroom in chatrooms:
     join_room(chatroom.id)
-  emit('message', 'join success')
+  emit('join-chatrooms-success', 'join success')
 
 # join chatroom by chatroom id
 @socketio.on('join-chatroom')
@@ -38,7 +41,5 @@ def chat(data):
     s.refresh(chat)
   except SQLAlchemyError as e: print(e)
   finally: s.close()
-  print(111, chat)
-  print(222, type(chat))
 
   emit('message', chat.query_to_dict(), to=data.get('chatroom_id'))
