@@ -15,8 +15,8 @@ app = Flask(__name__)
 api = Api(app)
 
 # cors
-cors = CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000', 'https://yunlew531.github.io/friendsbook']}})
-socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000', 'https://yunlew531.github.io/friendsbook'])
+cors = CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000', 'https://yunlew531.github.io']}})
+socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000', 'https://yunlew531.github.io'])
 
 # api
 # user api
