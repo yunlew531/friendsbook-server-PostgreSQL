@@ -1,7 +1,4 @@
-try:
-  from __main__ import socketio
-except ImportError:
-  from socketservice import socketio
+from app import socketio
 from flask_socketio import emit, join_room
 from config.db import Session
 from model.chat import Chat, Chatroom
@@ -35,6 +32,7 @@ def chat(data):
   chat.user_uid = data.get('user_uid')
   s = Session()
   s.add(chat)
+  print(data)
 
   try: 
     s.commit()
