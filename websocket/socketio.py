@@ -18,7 +18,7 @@ def join_chatrooms(uid):
   s.close()
   for chatroom in chatrooms:
     join_room(chatroom.id)
-  emit('join-chatrooms-success', 'join success')
+  emit('message', 'join chatroom success')
 
 # join chatroom by chatroom id
 @socketio.on('join-chatroom')
@@ -56,4 +56,4 @@ def chat(data):
   except SQLAlchemyError as e: print(e)
   finally: s.close()
 
-  emit('message', chat_dict, to=data.get('chatroom_id'))
+  emit('chat', chat_dict, to=data.get('chatroom_id'))

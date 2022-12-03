@@ -21,7 +21,6 @@ class ChatroomsApi(Resource):
       ).filter(Chat.chatroom_id==chatroom.get('id')).order_by(Chat.created_at)
       for chatrooms_row in chatrooms_rows:
         chat_result = chatrooms_row._asdict()
-        print(chat_result)
         chats_list.append({
           **chat_result.get('Chat').query_to_dict(),
           'author': {
@@ -41,11 +40,13 @@ class ChatroomsApi(Resource):
           if not m == g.uid:
             other_side_user = m
 
-        user_row = s.query(User.name, User.nickname).filter(User.uid==other_side_user).first()
+        user_row = s.query(User.name, User.nickname, User.avatar_url).filter(User.uid==other_side_user).first()
         user_dict = user_row._asdict()
         nickname = user_dict.get('nickname')
         name = user_dict.get('name')
+        avatar_url = user_dict.get('avatar_url')
         chatroom['name'] = nickname or name        
+        chatroom['avatar_url'] = avatar_url    
 
       chatrooms_list.append(chatroom)
       
@@ -62,25 +63,27 @@ class ChatroomApi(Resource):
     name = body.get('name')
     avatar_url = body.get('avatar_url')
 
+    chatroom = Chatroom()
+    chatroom.members = members
+    chatroom.type = type
+
     s = Session()
-    
+  
     # one to one chatroom
     if type == 1:
       if not len(members) == 2: return { 'message', 'one to one chatroom required two members' }, 400
-      chatroom = s.query(Chatroom).filter(Chatroom.members.contains(members)).first()
-      if chatroom: return { 'message': 'chatroom exist' }, 400
-      
-      chatroom = Chatroom()
-      chatroom.members = members
-      chatroom.type = type
-      chatroom.avatar_url = avatar_url
-      s.add(chatroom)
+      chatroom_query = s.query(Chatroom).filter(Chatroom.members.contains(members)).first()
+      if chatroom_query: return { 'message': 'chatroom exist' }, 400
     
     # multiple people chatroom
     if type == 2:
       chatroom.name = name
+      chatroom.avatar_url = avatar_url
+
       # TODO:
-    
+
+    s.add(chatroom)
+
     try:
       s.commit()
       s.refresh(chatroom)
