@@ -23,7 +23,7 @@ def join_chatrooms(uid):
 # join chatroom by chatroom id
 @socketio.on('join-chatroom')
 def join_chatroom(chatroom_id):
-  join_chatroom(chatroom_id)
+  join_room(chatroom_id)
 
 # send message in specify chatroom
 @socketio.on('chat')
@@ -36,13 +36,14 @@ def chat(data):
   s = Session()
   s.add(chat)
 
-  user = s.query(User.name, User.nickname, User.avatar_url).filter(User.uid==user_uid).first()
+  user = s.query(User.uid, User.name, User.nickname, User.avatar_url).filter(User.uid==user_uid).first()
   if not user: 
     emit('error-message', 'User not found')
     s.close()
     return;
   
   author = {
+    'uid': user.uid,
     'name': user.name,
     'nickname': user.nickname,
     'avatar_url': user.avatar_url

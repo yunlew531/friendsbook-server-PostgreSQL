@@ -59,24 +59,26 @@ class ChatroomApi(Resource):
   def post(self):
     body = request.get_json()
     members = body.get('members')
-    type = body.get('type')
+    chatroom_type = body.get('type')
     name = body.get('name')
     avatar_url = body.get('avatar_url')
 
     chatroom = Chatroom()
     chatroom.members = members
-    chatroom.type = type
+    chatroom.type = chatroom_type
 
     s = Session()
   
     # one to one chatroom
-    if type == 1:
+    if chatroom_type == 1:
       if not len(members) == 2: return { 'message', 'one to one chatroom required two members' }, 400
       chatroom_query = s.query(Chatroom).filter(Chatroom.members.contains(members)).first()
       if chatroom_query: return { 'message': 'chatroom exist' }, 400
     
     # multiple people chatroom
-    if type == 2:
+    if chatroom_type == 2:
+      if len(name) > 10: return { 'message': 'name too long' }, 400
+
       chatroom.name = name
       chatroom.avatar_url = avatar_url
 

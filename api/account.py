@@ -1,4 +1,5 @@
 from flask_restful import Resource, request
+from decorator.login_required import login_required
 from model.user import User
 from flask_bcrypt import Bcrypt
 from config.db import Session
@@ -54,6 +55,13 @@ class LoginLogoutApi(Resource):
     body = request.get_json()
     email = body.get('email')
     password = body.get('password')
+    account_type = request.args.get('account_type')
+    print(account_type)
+    if account_type == 'test':
+      email = os.getenv('TEST_ACCOUNT_EMAIL')
+      password = os.getenv('TEST_ACCOUNT_PASSWORD')
+    print(email, password)
+
     if not email: return { 'message': 'email required.', 'code': 1 }, 400
     if not password: return { 'message': 'password required.', 'code': 2 }, 400
     if len(password) < 6: return { 'message': 'password must be at least 6 characters.', 'code': 3 }, 400
