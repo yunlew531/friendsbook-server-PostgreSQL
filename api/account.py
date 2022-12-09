@@ -56,11 +56,9 @@ class LoginLogoutApi(Resource):
     email = body.get('email')
     password = body.get('password')
     account_type = request.args.get('account_type')
-    print(account_type)
     if account_type == 'test':
       email = os.getenv('TEST_ACCOUNT_EMAIL')
       password = os.getenv('TEST_ACCOUNT_PASSWORD')
-    print(email, password)
 
     if not email: return { 'message': 'email required.', 'code': 1 }, 400
     if not password: return { 'message': 'password required.', 'code': 2 }, 400

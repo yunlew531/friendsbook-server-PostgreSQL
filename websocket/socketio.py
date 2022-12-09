@@ -18,6 +18,7 @@ def join_chatrooms(uid):
   s.close()
   for chatroom in chatrooms:
     join_room(chatroom.id)
+  join_room(uid)
   emit('message', 'join chatroom success')
 
 # join chatroom by chatroom id

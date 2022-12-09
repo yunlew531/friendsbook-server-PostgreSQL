@@ -2,6 +2,7 @@ from flask import g
 from flask_restful import Resource
 from config.db import Session
 from decorator.login_required import login_required
+from model.chat import Chat, Chatroom
 from model.friend import Friend
 from model.user import User
 from random import randint
@@ -97,10 +98,30 @@ class FriendInviteApi(Resource):
     friend.connected_time = time()
     friend.connected = True
 
-    try: s.commit()
+    chatroom = Chatroom()
+    chatroom.members = [friend.usera_uid, friend.userb_uid]
+    chatroom.type = 1
+
+    for m in chatroom.members:
+      if m != g.uid: user_uid = m
+    other_user_row = s.query(User.name).filter(User.uid==user_uid).first()
+    other_user_dict = other_user_row._asdict()
+
+    self_user_row = s.query(User.name).filter(User.uid==g.uid).first()
+    self_user_dict = self_user_row._asdict()
+
+    s.add(chatroom)
+
+    try:
+      from app import socketio
+      s.commit()
+      s.refresh(chatroom)
+      chatroom_dict = {**chatroom.query_to_dict()}
+      socketio.emit('get-chatroom', {**chatroom_dict, 'name': other_user_dict.get('name')}, to=g.uid)
+      socketio.emit('get-chatroom', {**chatroom_dict, 'name': self_user_dict.get('name')}, to=user_uid)
     except SQLAlchemyError: return {'message':'something wrong' }, 500
     finally: s.close()
-    return { 'message':'success' }
+    return { 'message': 'success' }
 
   # remove friend invite by friend_id
   # refuse invite or cancel invite
@@ -125,18 +146,27 @@ class FriendInviteApi(Resource):
     return { 'message': 'success', 'code': code }
 
 class FriendShipApi(Resource):
+  # delete friend
   @login_required
   def delete(self, friend_id):
     s = Session()
     friend = s.query(Friend).filter(Friend.id==friend_id).first()
     if not friend: return { 'message': "friend_id not found" }, 404
 
-    try:
-      if friend.usera_uid==g.uid or friend.userb_uid==g.uid:
-        s.delete(friend)
-        s.commit()
-      else:
-        return { 'message': "you are not in this friend_id" }, 403
+    if friend.usera_uid==g.uid or friend.userb_uid==g.uid:
+      members = [friend.usera_uid, friend.userb_uid]
+      chatroom = s.query(Chatroom).filter(Chatroom.members.contains(members)).first()
+      chats_query = s.query(Chat).filter(Chat.chatroom_id==chatroom.id)
+
+      for chat_query in chats_query:
+        s.delete(chat_query)
+
+      s.delete(friend)
+      s.delete(chatroom)
+    else:
+      return { 'message': "you are not in this friend_id" }, 403
+    
+    try: s.commit()
     except SQLAlchemyError: return {'message':'something wrong' }, 500
     finally: s.close()
 

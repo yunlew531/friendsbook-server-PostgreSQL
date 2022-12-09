@@ -54,41 +54,37 @@ class ChatroomsApi(Resource):
 
 
 class ChatroomApi(Resource):
-  # create one to one chatroom or multiple people chatroom
+  # create multiple people chatroom
   @login_required
   def post(self):
     body = request.get_json()
     members = body.get('members')
-    chatroom_type = body.get('type')
     name = body.get('name')
     avatar_url = body.get('avatar_url')
 
     chatroom = Chatroom()
     chatroom.members = members
-    chatroom.type = chatroom_type
+    chatroom.type = 2
+    
+    if len(name) > 10: return { 'message': 'name too long' }, 400
+
+    chatroom.name = name
+    chatroom.avatar_url = avatar_url
 
     s = Session()
-  
-    # one to one chatroom
-    if chatroom_type == 1:
-      if not len(members) == 2: return { 'message', 'one to one chatroom required two members' }, 400
-      chatroom_query = s.query(Chatroom).filter(Chatroom.members.contains(members)).first()
-      if chatroom_query: return { 'message': 'chatroom exist' }, 400
-    
-    # multiple people chatroom
-    if chatroom_type == 2:
-      if len(name) > 10: return { 'message': 'name too long' }, 400
-
-      chatroom.name = name
-      chatroom.avatar_url = avatar_url
-
-      # TODO:
-
     s.add(chatroom)
 
     try:
+      from app import socketio
       s.commit()
       s.refresh(chatroom)
+
+      for m in members:
+        if m != g.uid:
+          socketio.emit('get-chatroom', chatroom.query_to_dict(), to=m)
+        else:
+          socketio.emit('join-chatroom', chatroom.query_to_dict().get('id'), to=g.uid)
+
     except SQLAlchemyError as e:
       print(e)
       return {'message': 'something wrong' }, 500
