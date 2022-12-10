@@ -50,6 +50,6 @@ api.add_resource(BannerImgApi, '/api/image/banner', methods=['POST'], endpoint='
 api.add_resource(AvatarImgApi, '/api/image/avatar', methods=['POST'], endpoint='avatar_image')
 api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint='images')
 
-# chatrooms api
+# chatroom api
 api.add_resource(ChatroomsApi, '/api/chatrooms', methods=['GET'], endpoint='chatrooms')
 api.add_resource(ChatroomApi, '/api/chatroom', methods=['POST'], endpoint='chatroom')

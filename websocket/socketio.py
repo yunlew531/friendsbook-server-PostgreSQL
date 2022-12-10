@@ -3,6 +3,7 @@ from flask_socketio import emit, join_room
 from config.db import Session
 from model.chat import Chat, Chatroom
 from sqlalchemy.exc import SQLAlchemyError
+from model.friend import Friend
 from model.user import User
 
 # broadcast to all connected clients
@@ -58,4 +59,40 @@ def chat(data):
   except SQLAlchemyError as e: print(e)
   finally: s.close()
 
-  emit('chat', chat_dict, to=data.get('chatroom_id'))
+@socketio.on('friends-last-seen')
+def friends_last_seen(uid):
+  s = Session()
+  # you invited be friend
+  situation_one = s.query(Friend, User.uid, User.last_seen).join(
+    User, Friend.userb_uid==User.uid
+  ).filter(Friend.connected==True).filter(Friend.usera_uid==uid)
+  # you received request to be friend
+  situation_two = s.query(Friend, User.uid, User.last_seen).join(
+    User, Friend.usera_uid==User.uid
+  ).filter(Friend.connected==True).filter(Friend.userb_uid==uid)
+  s.close()
+
+  friend_connected = []
+
+  for i in situation_one:
+    situation_one_result = i._asdict()
+    friend1_dict = situation_one_result.get('Friend').query_to_dict()
+    friend1 = {
+      'id': friend1_dict.get('id'),
+      'uid': situation_one_result.get('uid'),
+      'last_seen': situation_one_result.get('last_seen'),
+    }
+    friend_connected.append(friend1)
+
+  for i in situation_two:
+    situation_two_result = i._asdict()
+    friend2_dict = situation_two_result.get('Friend').query_to_dict()
+    friend2 = {
+      'id': friend2_dict.get('id'),
+      'uid': situation_two_result.get('uid'),
+      'last_seen': situation_two_result.get('last_seen'),
+    }
+    friend_connected.append(friend2)
+  
+  emit('friends-last-seen', friend_connected)
+
