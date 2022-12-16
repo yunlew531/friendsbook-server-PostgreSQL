@@ -17,6 +17,7 @@ class Article(BASE):
 
   comments = relationship('Comment')
   article_likes = relationship('ArticleLike')
+  notifications = relationship('Notification')
 
 class Comment(BASE):
   __tablename__ = 'comments'

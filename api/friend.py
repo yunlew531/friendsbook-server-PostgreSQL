@@ -4,6 +4,7 @@ from config.db import Session
 from decorator.login_required import login_required
 from model.chat import Chat, Chatroom
 from model.friend import Friend
+from model.notification import Notification
 from model.user import User
 from random import randint
 from sqlalchemy.exc import SQLAlchemyError
@@ -80,9 +81,19 @@ class FriendInviteApi(Resource):
       usera_uid=g.uid,
       userb_uid=user_uid,
     )
+
+    notification = Notification(
+      user_uid=user_uid,
+      invited_from=g.uid,
+      type=1,  # friend invited
+    )
+
     s.add(friend)
+    s.add(notification)
     try: s.commit()
-    except SQLAlchemyError: return { 'message': 'something wrong' }, 500
+    except SQLAlchemyError as e: 
+      print(e)
+      return { 'message': 'something wrong' }, 500
     finally: s.close()
 
     return { 'message':'success' }
