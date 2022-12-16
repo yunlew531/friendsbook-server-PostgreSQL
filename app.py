@@ -10,6 +10,7 @@ from api.user import UserAuthApi, UserApi
 from api.article import ArticleApi, ArticlesByUidApi, ArticleLikeApi, CommentApi, CommentsApi
 from api.friend import FriendsConnectedByUidApi, RecommendFriendApi, FriendInviteApi, FriendsApi, FriendShipApi
 from api.chat import ChatroomsApi, ChatroomApi
+from api.notification import NotificationsApi
 
 app = Flask(__name__)
 api = Api(app)
@@ -53,3 +54,6 @@ api.add_resource(ImagesApi, '/api/images/<user_uid>', methods=['GET'], endpoint=
 # chatroom api
 api.add_resource(ChatroomsApi, '/api/chatrooms', methods=['GET'], endpoint='chatrooms')
 api.add_resource(ChatroomApi, '/api/chatroom', methods=['POST'], endpoint='chatroom')
+
+# notification api
+api.add_resource(NotificationsApi, '/api/notifications', methods=['GET'], endpoint='notifications')
