@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 from api.image import ImageApi, ImagesApi, BannerImgApi, AvatarImgApi
 from api.account import AccountApi, LoginLogoutApi
-from api.user import UserAuthApi, UserApi
+from api.user import UserAuthApi, UserApi, UserEmail
 from api.article import ArticleApi, ArticlesByUidApi, ArticleLikeApi, CommentApi, CommentsApi
 from api.friend import FriendsConnectedByUidApi, RecommendFriendApi, FriendInviteApi, FriendsApi, FriendShipApi
 from api.chat import ChatroomsApi, ChatroomApi
@@ -22,6 +22,8 @@ socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000', 'https:/
 # api
 # user api
 api.add_resource(UserAuthApi, '/api/user', methods=['GET'], endpoint='personal_user_profile')
+api.add_resource(UserAuthApi, '/api/user/profile/<profile_key>', methods=['PATCH'], endpoint='user_profile')
+api.add_resource(UserEmail, '/api/user/profile/email/<email>', methods=['POST'], endpoint='user_email')
 api.add_resource(UserApi, '/api/user/<user_uid>', methods=['GET'], endpoint='user_by_uid')
 api.add_resource(AccountApi, '/api/account', methods=['POST'], endpoint='account')
 api.add_resource(LoginLogoutApi, '/api/account/login', methods=['POST'], endpoint='login')
