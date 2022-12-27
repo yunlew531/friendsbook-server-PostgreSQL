@@ -74,9 +74,27 @@ class UserEmail(Resource):
     try:
       s.commit()
       s.refresh(user)
-    except SQLAlchemyError as e: 
+    except SQLAlchemyError as e: return { 'message':'something error' }, 500
+    finally: s.close()
+
+    return { 'message': 'success', 'alternate_email': user.alternate_email }
+
+  @login_required
+  def delete(self, email):
+    s = Session()
+    user = s.query(User).filter(User.uid==g.uid).first()
+
+    if email not in user.alternate_email:
+      return { 'message': 'not in alternate_mail' }, 400
+    
+    user.alternate_email.remove(email)
+    
+    try:
+      s.commit()
+      s.refresh(user)
+    except SQLAlchemyError as e:
       print(e)
       return { 'message':'something error' }, 500
     finally: s.close()
-
+      
     return { 'message': 'success', 'alternate_email': user.alternate_email }

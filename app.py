@@ -23,7 +23,7 @@ socketio = SocketIO(app, cors_allowed_origins=['http://localhost:3000', 'https:/
 # user api
 api.add_resource(UserAuthApi, '/api/user', methods=['GET'], endpoint='personal_user_profile')
 api.add_resource(UserAuthApi, '/api/user/profile/<profile_key>', methods=['PATCH'], endpoint='user_profile')
-api.add_resource(UserEmail, '/api/user/profile/email/<email>', methods=['POST'], endpoint='user_email')
+api.add_resource(UserEmail, '/api/user/profile/email/<email>', methods=['POST', 'DELETE'], endpoint='user_email')
 api.add_resource(UserApi, '/api/user/<user_uid>', methods=['GET'], endpoint='user_by_uid')
 api.add_resource(AccountApi, '/api/account', methods=['POST'], endpoint='account')
 api.add_resource(LoginLogoutApi, '/api/account/login', methods=['POST'], endpoint='login')
