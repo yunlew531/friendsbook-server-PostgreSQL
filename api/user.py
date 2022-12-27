@@ -80,6 +80,29 @@ class UserEmail(Resource):
     return { 'message': 'success', 'alternate_email': user.alternate_email }
 
   @login_required
+  def patch(self, email):
+    updated_email = request.get_json().get('email')
+    s = Session()
+    user = s.query(User).filter(User.uid==g.uid).first()
+
+    if email not in user.alternate_email:
+      return { 'message': 'not in alternate_mail' }, 400
+    
+    index = user.alternate_email.index(email)
+    user.alternate_email[index] = updated_email
+
+    try:
+      s.commit()
+      s.refresh(user)
+    except SQLAlchemyError as e:
+      print(e)
+      return { 'message':'something error' }, 500
+    finally: s.close()
+      
+    return { 'message': 'success', 'alternate_email': user.alternate_email }
+
+
+  @login_required
   def delete(self, email):
     s = Session()
     user = s.query(User).filter(User.uid==g.uid).first()
@@ -92,9 +115,7 @@ class UserEmail(Resource):
     try:
       s.commit()
       s.refresh(user)
-    except SQLAlchemyError as e:
-      print(e)
-      return { 'message':'something error' }, 500
+    except SQLAlchemyError: return { 'message':'something error' }, 500
     finally: s.close()
       
     return { 'message': 'success', 'alternate_email': user.alternate_email }
